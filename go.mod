@@ -8,7 +8,6 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.3
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/spf13/cobra v1.9.0
-	github.com/theyahya/enola v0.4.0
 )
 
 require (
