@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/benji-bou/enola"
+	"github.com/benji-bou/enola/cmd/exporter"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/theyahya/enola"
-	"github.com/theyahya/enola/cmd/exporter"
 )
 
 type responseMsg enola.Result

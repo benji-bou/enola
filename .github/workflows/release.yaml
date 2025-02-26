@@ -65,7 +65,7 @@ jobs:
               maintainer: Yahya SayadArbabi <yahya.arbabi@gmail.com>
               bindir: /usr/local/bin
               description: This is Sherlock's sister, Modern shiny CLI tool written with Golang
-              homepage: https://github.com/TheYahya/enola
+              homepage: https://github.com/benji-bou/enola
               license: MIT
               formats:
                 - deb

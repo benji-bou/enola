@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/sync/semaphore"
+	"github.com/benji-bou/diwo"
 )
 
 const RequestTimeout time.Duration = time.Second * 20
@@ -61,9 +61,7 @@ func (s *Enola) ListCount() int           { return len(s.Data) }
 func (s *Enola) List() map[string]Website { return s.Data }
 
 func (s *Enola) Check(username string) (<-chan Result, error) {
-	ch := make(chan Result)
 	data := map[string]Website{}
-
 	if s.Site != "" {
 		for k, v := range s.Data {
 			if strings.Contains(strings.ToLower(k), strings.Trim(strings.ToLower(s.Site), " ")) {
@@ -80,75 +78,62 @@ func (s *Enola) Check(username string) (<-chan Result, error) {
 	if len(data) == 0 {
 		data = s.Data
 	}
-
-	ctx := context.Background()
-	sem := semaphore.NewWeighted(20)
-
-	go func() {
-		for key, value := range data {
-			if err := sem.Acquire(ctx, 1); err != nil {
-				fmt.Println(err)
-			}
-			go func(key string, value Website) {
-				defer sem.Release(1)
-				url := strings.ReplaceAll(value.URL, "{}", username)
-
-				res := Result{
-					Name:  key,
-					URL:   url,
-					Found: false,
-				}
-
-				client := http.DefaultClient
-				client.Timeout = RequestTimeout
-				if value.ErrorType == "status_code" {
-					resp, err := client.Get(url)
-					if err != nil {
-						ch <- res
-						return
-					}
-					resp.Body.Close()
-
-					if resp.StatusCode == http.StatusOK {
-						res.Found = true
-						ch <- res
-						return
-					}
-					ch <- res
-					return
-
-				}
-
-				if value.ErrorType == "message" {
-					resp, err := client.Get(url)
-					if err != nil {
-						ch <- res
-						return
-					}
-					defer resp.Body.Close()
-
-					bodyBytes, err := io.ReadAll(resp.Body)
-					if err != nil {
-						ch <- res
-						return
-					}
-
-					valueString, ok := value.ErrorMessage.(string)
-					if !ok {
-						ch <- res
-						return
-					}
-
-					if !strings.Contains(string(bodyBytes), valueString) {
-						res.Found = true
-						ch <- res
-						return
-					}
-					ch <- res
-				}
-			}(key, value)
+	dataC := diwo.FromMap(data)
+	return diwo.MergedPool[Result](20, func(outputC chan<- Result) {
+		for data := range dataC {
+			outputC <- Check(data.Key, data.Value, username)
 		}
-	}()
+	}), nil
+}
 
-	return ch, nil
+func Check(key string, value Website, username string) Result {
+	url := strings.ReplaceAll(value.URL, "{}", username)
+
+	res := Result{
+		Name:  key,
+		URL:   url,
+		Found: false,
+	}
+
+	client := http.DefaultClient
+	client.Timeout = RequestTimeout
+	if value.ErrorType == "status_code" {
+		resp, err := client.Get(url)
+		if err != nil {
+			return res
+		}
+		resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			res.Found = true
+
+			return res
+		}
+		return res
+
+	}
+
+	if value.ErrorType == "message" {
+		resp, err := client.Get(url)
+		if err != nil {
+			return res
+		}
+		defer resp.Body.Close()
+
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return res
+		}
+
+		valueString, ok := value.ErrorMessage.(string)
+		if !ok {
+			return res
+		}
+
+		if !strings.Contains(string(bodyBytes), valueString) {
+			res.Found = true
+			return res
+		}
+	}
+	return res
 }

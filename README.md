@@ -4,7 +4,7 @@ This is [Sherlock](https://github.com/sherlock-project/sherlock)'s sister **Enol
 ## Install 
 Minimum `go1.23` required.
 ```go
-go install github.com/theyahya/enola/cmd/enola@latest
+go install github.com/benji-bou/enola/cmd/enola@latest
 ```
 
 ## Usage
@@ -12,7 +12,7 @@ go install github.com/theyahya/enola/cmd/enola@latest
 enola {username}
 ```
 
-<img alt="Enola demo" src="https://github.com/theyahya/enola/blob/main/examples/demo.gif" width="600" />
+<img alt="Enola demo" src="https://github.com/benji-bou/enola/blob/main/examples/demo.gif" width="600" />
 
 ### Using Docker
 Build the image
@@ -30,4 +30,4 @@ You can fork the repository, improve or fix some part of it and then send a pull
 
 ## License
 
-This software is released under the [MIT](https://github.com/TheYahya/enola/blob/main/LICENSE) License.
+This software is released under the [MIT](https://github.com/benji-bou/enola/blob/main/LICENSE) License.
